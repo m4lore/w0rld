@@ -31,3 +31,9 @@ The one pattern this project follows. If the code and this file disagree, fix on
 - Subject: `[type] subject`, lowercase, at most 72 characters (`[add] follow camera damping`). A body only to explain why.
 - Types: `add`, `update`, `fix`, `delete`, `feat`, `refactor`, `docs`, `chore`.
 - One logical change per commit. No trailers.
+
+## Branches
+
+- One branch per topic, named `type/topic` with the commit types, lowercase kebab-case (`feat/minimal-scene`).
+- `main` only moves by fast-forward: rebase the branch on `main` if needed, then `git merge --ff-only`. No merge commits.
+- Delete the branch once merged.
