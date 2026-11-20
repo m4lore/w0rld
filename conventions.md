@@ -1,0 +1,33 @@
+# Conventions
+
+The one pattern this project follows. If the code and this file disagree, fix one of them.
+
+## Language and style
+
+- Everything in English: code, names, comments, commits, README, issues.
+- Comments, commit messages and log strings are lowercase.
+- Comments explain why, or a non-obvious point; never what the code does. No long descriptive blocks, no emoji.
+- Naming: `PascalCase` for classes, `camelCase` for functions and variables, `UPPER_SNAKE_CASE` only for module-level constants.
+- File names: lowercase `kebab-case` (`follow-camera.js`).
+
+## Code shape
+
+- Plain ES modules. One file, one responsibility; keep files short.
+- Folders by feature (`core/`, `world/`, `player/`, `ui/`, `content/`), one level deep, no barrel `index.js`.
+- `main.js` is the only place that wires modules together; dependencies are passed to constructors. No singletons, no service locator.
+- One loop. Everything that changes over time exposes `update(dt)` and is registered in a single ordered `updatables` list in `main.js`.
+- Game objects are plain classes that own an `Object3D` (`this.root`); they never `extends Object3D`.
+- Distant systems (world and ui) talk through one shared `EventTarget` (`events.js`, event names like `place:enter`); inside a feature, direct calls.
+
+## Dependencies and assets
+
+- Runtime dependencies: `three` only. A new dependency needs a reason in its commit message.
+- `three` is pinned to an exact version; an upgrade is its own commit, after reading the migration guide.
+- Only optimised assets go in the repo; raw sources stay out. Every asset has a known source and licence.
+- No real brands, logos or protected characters in shipped assets.
+
+## Commits
+
+- Subject: `[type] subject`, lowercase, at most 72 characters (`[add] follow camera damping`). A body only to explain why.
+- Types: `add`, `update`, `fix`, `delete`, `feat`, `refactor`, `docs`, `chore`.
+- One logical change per commit. No trailers.
