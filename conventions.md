@@ -7,7 +7,7 @@ The one pattern this project follows. If the code and this file disagree, fix on
 - Everything in English: code, names, comments, commits, README, issues.
 - Comments, commit messages and log strings are lowercase.
 - Comments explain why, or a non-obvious point; never what the code does. No long descriptive blocks, no emoji.
-- Naming: `PascalCase` for classes, `camelCase` for functions and variables, `UPPER_SNAKE_CASE` only for module-level constants.
+- Naming: `PascalCase` for classes, `camelCase` for functions and variables, `UPPER_SNAKE_CASE` only for fixed literal values at module level (numbers, strings, colours: `CAMERA_FOV`). Objects created with `new` stay `camelCase` even when `const` (`renderer`, not `RENDERER`).
 - File names: lowercase `kebab-case` (`follow-camera.js`).
 
 ## Code shape
@@ -18,7 +18,7 @@ The one pattern this project follows. If the code and this file disagree, fix on
 - One loop. Everything that changes over time exposes `update(dt)` and is registered in a single ordered `updatables` list in `main.js`.
 - No magic numbers or strings: a value whose meaning is not obvious gets a named constant at the top of the module that uses it (`CAMERA_FOV`). Obvious values (`0` as origin, `/ 2` to halve) stay inline. No shared `constants.js`: a value needed elsewhere is exported by the module that owns it.
 - Game objects are plain classes that own an `Object3D` (`this.root`); they never `extends Object3D`.
-- Distant systems (world and ui) talk through one shared `EventTarget` (`events.js`, event names like `place:enter`); inside a feature, direct calls.
+- Distant systems (world and ui) talk through one shared `EventTarget` (`events.js`); inside a feature, direct calls. Event names (`place:enter`) are constants exported by `events.js`, so a typo becomes an import error.
 
 ## Dependencies and assets
 
