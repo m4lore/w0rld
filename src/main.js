@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { createCamera } from './core/camera.js';
+import { startLoop } from './core/loop.js';
 import { createRenderer } from './core/renderer.js';
 import { resizeToWindow } from './core/resize.js';
 import { Cube } from './world/cube.js';
@@ -13,11 +14,12 @@ const cube = new Cube();
 const lights = new Lights();
 scene.add(cube.root, lights.root);
 
+const updatables = [cube];
+
 resizeToWindow(renderer, camera);
-renderer.render(scene, camera);
 
 window.addEventListener('resize', () => {
   resizeToWindow(renderer, camera);
-  // resizing wipes the canvas and there's no loop yet, so draw again
-  renderer.render(scene, camera);
 });
+
+startLoop(renderer, scene, camera, updatables);
