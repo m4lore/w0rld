@@ -3,8 +3,9 @@ import { createCamera } from './core/camera.js';
 import { startLoop } from './core/loop.js';
 import { createRenderer } from './core/renderer.js';
 import { resizeToWindow } from './core/resize.js';
+import { Player } from './player/player.js';
 import { Lights } from './world/lights.js';
-import { Planet } from './world/planet.js';
+import { PLANET_RADIUS, Planet } from './world/planet.js';
 
 // placeholder, the real one gets picked later
 const FOG_COLOR = 0xb4aed0;
@@ -21,7 +22,8 @@ scene.fog = new THREE.Fog(FOG_COLOR, FOG_NEAR, FOG_FAR);
 
 const planet = new Planet();
 const lights = new Lights();
-scene.add(planet.root, lights.root);
+const player = new Player(PLANET_RADIUS);
+scene.add(planet.root, lights.root, player.root);
 
 const updatables = [];
 

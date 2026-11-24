@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
 // placeholders, the real ones get picked later
-const PLANET_RADIUS = 20;
+export const PLANET_RADIUS = 20;
 const PLANET_COLOR = 0xdddddd;
 
 const WIDTH_SEGMENTS = 64;
