@@ -16,9 +16,13 @@ const START_DIRECTION_X = 1;
 const START_DIRECTION_Y = 1;
 const START_DIRECTION_Z = 3;
 
+// placeholder, tuned later
+const WALK_SPEED = 3;
+
 const _n = new THREE.Vector3();
 const _up = new THREE.Vector3();
 const _q = new THREE.Quaternion();
+const _forward = new THREE.Vector3();
 
 /** @param {THREE.Object3D} root */
 function alignToSurface(root) {
@@ -33,6 +37,8 @@ function alignToSurface(root) {
 export class Player {
   /** @param {number} planetRadius */
   constructor(planetRadius) {
+    this.planetRadius = planetRadius;
+
     const body = new THREE.Mesh(
       new THREE.BoxGeometry(BODY_WIDTH, BODY_HEIGHT, BODY_DEPTH),
       new THREE.MeshStandardMaterial({ color: BODY_COLOR }),
@@ -54,6 +60,15 @@ export class Player {
       .set(START_DIRECTION_X, START_DIRECTION_Y, START_DIRECTION_Z)
       .normalize()
       .multiplyScalar(planetRadius);
+    alignToSurface(this.root);
+  }
+
+  /** @param {number} dt */
+  update(dt) {
+    _forward.set(0, 0, 1).applyQuaternion(this.root.quaternion);
+    this.root.position.addScaledVector(_forward, WALK_SPEED * dt);
+    // a straight step lifts off the sphere a little
+    this.root.position.normalize().multiplyScalar(this.planetRadius);
     alignToSurface(this.root);
   }
 }

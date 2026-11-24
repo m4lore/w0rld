@@ -25,7 +25,7 @@ const lights = new Lights();
 const player = new Player(PLANET_RADIUS);
 scene.add(planet.root, lights.root, player.root);
 
-const updatables = [];
+const updatables = [player];
 
 resizeToWindow(renderer, camera);
 
