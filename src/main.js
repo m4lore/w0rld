@@ -11,8 +11,9 @@ import { PLANET_RADIUS, Planet } from './world/planet.js';
 // placeholder, the real one gets picked later
 const FOG_COLOR = 0xb4aed0;
 
-const FOG_NEAR = 20;
-const FOG_FAR = 32;
+// placeholders, tuned later
+const FOG_NEAR = 6;
+const FOG_FAR = 11;
 
 const renderer = createRenderer(document.body);
 const camera = createCamera();
