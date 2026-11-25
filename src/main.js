@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { createCamera } from './core/camera.js';
 import { enableDistanceFog } from './core/distance-fog.js';
+import { Input } from './core/input.js';
 import { startLoop } from './core/loop.js';
 import { createRenderer } from './core/renderer.js';
 import { resizeToWindow } from './core/resize.js';
@@ -17,6 +18,7 @@ const FOG_NEAR = 6;
 const FOG_FAR = 11;
 
 const renderer = createRenderer(document.body);
+const input = new Input(renderer.domElement);
 const camera = createCamera();
 const scene = new THREE.Scene();
 // fog only tints meshes, the background needs the same color by hand
@@ -27,10 +29,10 @@ enableDistanceFog();
 const planet = new Planet();
 const lights = new Lights();
 const player = new Player(PLANET_RADIUS);
-const followCamera = new FollowCamera(camera, player.root);
+const followCamera = new FollowCamera(camera, player.root, input.intent);
 scene.add(planet.root, lights.root, player.root, followCamera.root);
 
-const updatables = [player, followCamera];
+const updatables = [input, player, followCamera];
 
 resizeToWindow(renderer, camera);
 

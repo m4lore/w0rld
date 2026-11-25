@@ -25,7 +25,7 @@ const _q = new THREE.Quaternion();
 const _forward = new THREE.Vector3();
 
 /** @param {THREE.Object3D} root */
-function alignToSurface(root) {
+export function alignToSurface(root) {
   _n.copy(root.position).normalize();
   _up.set(0, 1, 0).applyQuaternion(root.quaternion);
   // the smallest turn, so it tilts without spinning and keeps looking the same way
