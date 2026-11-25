@@ -3,6 +3,7 @@ import { createCamera } from './core/camera.js';
 import { startLoop } from './core/loop.js';
 import { createRenderer } from './core/renderer.js';
 import { resizeToWindow } from './core/resize.js';
+import { FollowCamera } from './player/follow-camera.js';
 import { Player } from './player/player.js';
 import { Lights } from './world/lights.js';
 import { PLANET_RADIUS, Planet } from './world/planet.js';
@@ -23,9 +24,10 @@ scene.fog = new THREE.Fog(FOG_COLOR, FOG_NEAR, FOG_FAR);
 const planet = new Planet();
 const lights = new Lights();
 const player = new Player(PLANET_RADIUS);
-scene.add(planet.root, lights.root, player.root);
+const followCamera = new FollowCamera(camera, player.root);
+scene.add(planet.root, lights.root, player.root, followCamera.root);
 
-const updatables = [player];
+const updatables = [player, followCamera];
 
 resizeToWindow(renderer, camera);
 
