@@ -14,12 +14,12 @@ export async function loadHeroModel() {
     // already in metres, feet at the origin and facing +z: no scale or offset needed
     const model = gltf.scene;
     model.traverse((object) => {
-      // bounds are computed once, in the rest pose: an animation can leave them and vanish
+      // the culling sphere is measured once, on the first pose, so the hero can vanish when a later pose sticks out of it
       if (object instanceof THREE.Mesh) {
         object.frustumCulled = false;
       }
     });
-    return model;
+    return { model, clips: gltf.animations };
   } catch (error) {
     // models are not in the repo, so a fresh clone has to start without them
     console.warn(`no model at ${HERO_URL}, using the placeholder`, error);

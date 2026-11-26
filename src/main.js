@@ -6,6 +6,7 @@ import { startLoop } from './core/loop.js';
 import { createRenderer } from './core/renderer.js';
 import { resizeToWindow } from './core/resize.js';
 import { FollowCamera } from './player/follow-camera.js';
+import { createHeroMixer } from './player/hero-animation.js';
 import { loadHeroModel } from './player/hero-model.js';
 import { Player } from './player/player.js';
 import { Lights } from './world/lights.js';
@@ -29,12 +30,16 @@ enableDistanceFog();
 
 const planet = new Planet();
 const lights = new Lights();
-const heroModel = await loadHeroModel();
-const player = new Player(PLANET_RADIUS, heroModel);
+const hero = await loadHeroModel();
+const player = new Player(PLANET_RADIUS, hero?.model ?? null);
 const followCamera = new FollowCamera(camera, player.root, input.intent);
 scene.add(planet.root, lights.root, player.root, followCamera.root);
 
+/** @type {{ update(dt: number): void }[]} */
 const updatables = [input, player, followCamera];
+if (hero) {
+  updatables.push(createHeroMixer(hero.model, hero.clips));
+}
 
 resizeToWindow(renderer, camera);
 

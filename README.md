@@ -10,7 +10,7 @@ npm ci
 npm run dev
 ```
 
-Models and other assets are not in this repo (see [License](#license)). To see them in development, put the optimised GLB files in `public/models/`.
+The 3D models are not in this repo, because the code licence does not cover them (see [License](#license)). Without them the character is a placeholder made of boxes and the console shows a warning. To see the real character in development, put the optimised GLB files in `public/models/`.
 
 ## License
 
