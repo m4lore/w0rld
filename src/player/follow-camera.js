@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { alignToSurface } from './player.js';
 
 // placeholders, tuned later
-const FOLLOW_DISTANCE = 5;
+const FOLLOW_DISTANCE = 2;
 const FOLLOW_HEIGHT = 2.5;
 const LOOK_HEIGHT = 1.5;
 
@@ -17,8 +17,9 @@ const MIN_PITCH = -1;
 const MAX_PITCH = 0.4;
 
 // placeholders, tuned later
-const EYE_HEIGHT = 1.6;
-const FIRST_PERSON_MIN_PITCH = -1.4;
+const EYE_HEIGHT = 1.5;
+const EYE_FORWARD = 0.175;
+const FIRST_PERSON_MIN_PITCH = -1.3;
 const FIRST_PERSON_MAX_PITCH = 1.4;
 
 // the rig faces +z, so its right is -x, not +x
@@ -92,14 +93,13 @@ export class FollowCamera {
 
   switchView() {
     this.firstPerson = !this.firstPerson;
-    // the camera sits inside the body, it would see the nose from behind
-    this.target.visible = !this.firstPerson;
     if (this.firstPerson) {
-      this.pivot.position.y = EYE_HEIGHT;
+      // forward on the pivot, not on the camera: tilting down would pull the eyes back over the neck
+      this.pivot.position.set(0, EYE_HEIGHT, EYE_FORWARD);
       this.camera.position.set(0, 0, 0);
       this.camera.quaternion.copy(lookForward);
     } else {
-      this.pivot.position.y = LOOK_HEIGHT;
+      this.pivot.position.set(0, LOOK_HEIGHT, 0);
       this.camera.position.copy(this.behindPosition);
       this.camera.quaternion.copy(this.behindQuaternion);
     }
