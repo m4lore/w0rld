@@ -6,6 +6,7 @@ import { startLoop } from './core/loop.js';
 import { createRenderer } from './core/renderer.js';
 import { resizeToWindow } from './core/resize.js';
 import { FollowCamera } from './player/follow-camera.js';
+import { loadHeroModel } from './player/hero-model.js';
 import { Player } from './player/player.js';
 import { Lights } from './world/lights.js';
 import { PLANET_RADIUS, Planet } from './world/planet.js';
@@ -28,7 +29,8 @@ enableDistanceFog();
 
 const planet = new Planet();
 const lights = new Lights();
-const player = new Player(PLANET_RADIUS);
+const heroModel = await loadHeroModel();
+const player = new Player(PLANET_RADIUS, heroModel);
 const followCamera = new FollowCamera(camera, player.root, input.intent);
 scene.add(planet.root, lights.root, player.root, followCamera.root);
 

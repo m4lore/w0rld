@@ -10,6 +10,8 @@ npm ci
 npm run dev
 ```
 
+Models and other assets are not in this repo (see [License](#license)). To see them in development, put the optimised GLB files in `public/models/`.
+
 ## License
 
 The code is released under the [MIT License](LICENSE). 3D models, textures, audio and CV content are not covered by it.

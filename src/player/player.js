@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-// placeholders until the real model
+// placeholders for when the model file is missing
 const BODY_COLOR = 0x6a4bc4;
 const NOSE_COLOR = 0x111111;
 
@@ -34,27 +34,37 @@ export function alignToSurface(root) {
   root.quaternion.premultiply(_q).normalize();
 }
 
+function createPlaceholder() {
+  const body = new THREE.Mesh(
+    new THREE.BoxGeometry(BODY_WIDTH, BODY_HEIGHT, BODY_DEPTH),
+    new THREE.MeshStandardMaterial({ color: BODY_COLOR }),
+  );
+  // boxes are centered, this puts the feet on the ground
+  body.position.y = BODY_HEIGHT / 2;
+
+  const nose = new THREE.Mesh(
+    new THREE.BoxGeometry(NOSE_SIZE, NOSE_SIZE, NOSE_LENGTH),
+    new THREE.MeshStandardMaterial({ color: NOSE_COLOR }),
+  );
+  // +z is forward, same as the glb models
+  nose.position.set(0, NOSE_HEIGHT, BODY_DEPTH / 2 + NOSE_LENGTH / 2);
+
+  const placeholder = new THREE.Group();
+  placeholder.add(body, nose);
+  return placeholder;
+}
+
 export class Player {
-  /** @param {number} planetRadius */
-  constructor(planetRadius) {
+  /**
+   * @param {number} planetRadius
+   * @param {THREE.Object3D | null} model
+   */
+  constructor(planetRadius, model) {
     this.planetRadius = planetRadius;
 
-    const body = new THREE.Mesh(
-      new THREE.BoxGeometry(BODY_WIDTH, BODY_HEIGHT, BODY_DEPTH),
-      new THREE.MeshStandardMaterial({ color: BODY_COLOR }),
-    );
-    // boxes are centered, this puts the feet on the ground
-    body.position.y = BODY_HEIGHT / 2;
-
-    const nose = new THREE.Mesh(
-      new THREE.BoxGeometry(NOSE_SIZE, NOSE_SIZE, NOSE_LENGTH),
-      new THREE.MeshStandardMaterial({ color: NOSE_COLOR }),
-    );
-    // +z is forward, same as the glb models
-    nose.position.set(0, NOSE_HEIGHT, BODY_DEPTH / 2 + NOSE_LENGTH / 2);
-
+    this.model = model ?? createPlaceholder();
     this.root = new THREE.Group();
-    this.root.add(body, nose);
+    this.root.add(this.model);
 
     this.root.position
       .set(START_DIRECTION_X, START_DIRECTION_Y, START_DIRECTION_Z)

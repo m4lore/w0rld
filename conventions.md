@@ -26,8 +26,8 @@ The one pattern this project follows. If the code and this file disagree, fix on
 - Runtime dependencies: `three` only. A new dependency needs a reason in its commit message.
 - `three` is pinned to an exact version; an upgrade is its own commit, after reading the migration guide.
 - Import the `three` core as `import * as THREE from 'three'`; addons by name from the full path with `.js` (`three/addons/loaders/GLTFLoader.js`), never from the `three/addons` barrel.
-- Only optimised assets go in the repo; raw sources stay out. Every asset has a known source and licence.
-- No real brands, logos or protected characters in shipped assets.
+- Models are not in the repo: they live in `public/models/`, ignored by git, load from a fixed URL (`/models/<name>.glb`) and reach the server separately.
+- Only optimised files go in `public/models/`; raw sources stay out of the project. Every asset has a known source and licence and can be replaced on its own.
 
 ## Commits
 
