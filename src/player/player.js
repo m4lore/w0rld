@@ -58,9 +58,12 @@ export class Player {
   /**
    * @param {number} planetRadius
    * @param {THREE.Object3D | null} model
+   * @param {{ moveY: number }} intent
    */
-  constructor(planetRadius, model) {
+  constructor(planetRadius, model, intent) {
     this.planetRadius = planetRadius;
+    this.intent = intent;
+    this.speed = 0;
 
     this.model = model ?? createPlaceholder();
     this.root = new THREE.Group();
@@ -75,8 +78,9 @@ export class Player {
 
   /** @param {number} dt */
   update(dt) {
+    this.speed = this.intent.moveY > 0 ? WALK_SPEED : 0;
     _forward.set(0, 0, 1).applyQuaternion(this.root.quaternion);
-    this.root.position.addScaledVector(_forward, WALK_SPEED * dt);
+    this.root.position.addScaledVector(_forward, this.speed * dt);
     // a straight step lifts off the sphere a little
     this.root.position.normalize().multiplyScalar(this.planetRadius);
     alignToSurface(this.root);

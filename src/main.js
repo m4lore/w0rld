@@ -31,7 +31,7 @@ enableDistanceFog();
 const planet = new Planet();
 const lights = new Lights();
 const hero = await loadHeroModel();
-const player = new Player(PLANET_RADIUS, hero?.model ?? null);
+const player = new Player(PLANET_RADIUS, hero?.model ?? null, input.intent);
 const followCamera = new FollowCamera(camera, player.root, input.intent);
 scene.add(planet.root, lights.root, player.root, followCamera.root);
 

@@ -1,10 +1,12 @@
+const FORWARD_KEY = 'KeyW';
 const SWITCH_VIEW_KEY = 'KeyV';
 
 export class Input {
   /** @param {HTMLElement} element */
   constructor(element) {
-    // filled in place: the camera keeps a reference to this object
-    this.intent = { camDX: 0, camDY: 0, switchView: false };
+    // filled in place: the player and the camera keep a reference to this object
+    this.intent = { moveY: 0, camDX: 0, camDY: 0, switchView: false };
+    this.forwardHeld = false;
     this.mouseDX = 0;
     this.mouseDY = 0;
     this.switchViewPressed = false;
@@ -25,9 +27,18 @@ export class Input {
     });
 
     window.addEventListener('keydown', (event) => {
+      if (event.code === FORWARD_KEY) {
+        this.forwardHeld = true;
+      }
       // a held key fires keydown again and again, one press is one switch
       if (event.code === SWITCH_VIEW_KEY && !event.repeat) {
         this.switchViewPressed = true;
+      }
+    });
+
+    window.addEventListener('keyup', (event) => {
+      if (event.code === FORWARD_KEY) {
+        this.forwardHeld = false;
       }
     });
 
@@ -36,6 +47,7 @@ export class Input {
   }
 
   update() {
+    this.intent.moveY = this.forwardHeld ? 1 : 0;
     // several moves can land in one frame, they add up until here
     this.intent.camDX = this.mouseDX;
     this.intent.camDY = this.mouseDY;
@@ -46,6 +58,8 @@ export class Input {
   }
 
   clear() {
+    // a key let go in another window never sends keyup here
+    this.forwardHeld = false;
     this.mouseDX = 0;
     this.mouseDY = 0;
     this.switchViewPressed = false;
