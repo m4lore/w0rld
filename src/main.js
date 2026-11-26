@@ -7,6 +7,7 @@ import { createRenderer } from './core/renderer.js';
 import { resizeToWindow } from './core/resize.js';
 import { FollowCamera } from './player/follow-camera.js';
 import { HeroAnimation } from './player/hero-animation.js';
+import { HeroHead } from './player/hero-head.js';
 import { loadHeroModel } from './player/hero-model.js';
 import { Player } from './player/player.js';
 import { Lights } from './world/lights.js';
@@ -38,7 +39,10 @@ scene.add(planet.root, lights.root, player.root, followCamera.root);
 /** @type {{ update(dt: number): void }[]} */
 const updatables = [input, player, followCamera];
 if (hero) {
-  updatables.push(new HeroAnimation(hero.model, hero.clips, player));
+  updatables.push(
+    new HeroHead(hero.model, followCamera),
+    new HeroAnimation(hero.model, hero.clips, player),
+  );
 }
 
 resizeToWindow(renderer, camera);
