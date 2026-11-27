@@ -7,6 +7,7 @@ import { createRenderer } from './core/renderer.js';
 import { resizeToWindow } from './core/resize.js';
 import { FollowCamera } from './player/follow-camera.js';
 import { HeroAnimation } from './player/hero-animation.js';
+import { HeroEyes } from './player/hero-eyes.js';
 import { HeroHead } from './player/hero-head.js';
 import { loadHeroModel } from './player/hero-model.js';
 import { Player } from './player/player.js';
@@ -42,12 +43,19 @@ const followCamera = new FollowCamera(camera, player.root, input.intent);
 scene.add(planet.root, lights.root, player.root, followCamera.root);
 
 /** @type {{ update(dt: number): void }[]} */
-const updatables = [input, player, followCamera];
+const updatables = [input, player];
+/** @type {HeroEyes | null} */
+let heroEyes = null;
 if (hero) {
-  updatables.push(
-    new HeroHead(hero.model, followCamera),
-    new HeroAnimation(hero.model, hero.clips, player),
-  );
+  const heroAnimation = new HeroAnimation(hero.model, hero.clips, player);
+  heroEyes = new HeroEyes(hero.model, heroAnimation.backflipAction);
+  updatables.push(heroAnimation, heroEyes);
+}
+// after what it follows, or it lags a frame behind
+updatables.push(followCamera);
+if (hero) {
+  // after the camera, or on the frame of v the head would still show
+  updatables.push(new HeroHead(hero.model, followCamera));
 }
 
 resizeToWindow(renderer, camera);

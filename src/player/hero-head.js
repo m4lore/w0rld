@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-const HEAD_BONE = 'mixamorigHead';
+export const HEAD_BONE = 'mixamorigHead';
 // not zero: the head's normals and the bones under it would lose their direction
 const HIDDEN_HEAD_SCALE = 0.0001;
 
