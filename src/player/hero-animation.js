@@ -4,10 +4,14 @@ import { WALK_SPEED } from './player.js';
 const IDLE_CLIP = 'idle';
 const WALK_CLIP = 'walk';
 const RUN_CLIP = 'run';
+const BACKFLIP_CLIP = 'backflip';
 const HIPS_POSITION_TRACK = 'mixamorigHips.position';
 
 // placeholder, tuned later
 const FADE_DURATION = 0.2;
+
+// placeholder, tuned later
+const BACKFLIP_TAKEOFF_TIME = 1.2;
 
 /**
  * @param {THREE.AnimationClip[]} clips
@@ -38,30 +42,45 @@ export class HeroAnimation {
   /**
    * @param {THREE.Object3D} model
    * @param {THREE.AnimationClip[]} clips
-   * @param {{ speed: number }} player
+   * @param {{ speed: number, grounded: boolean }} player
    */
   constructor(model, clips, player) {
     this.player = player;
+    this.wasGrounded = player.grounded;
 
     const walkClip = findClip(clips, WALK_CLIP);
     // the player already moves the body, the clip walking too would snap back at every loop
     keepInPlace(walkClip);
+    const backflipClip = findClip(clips, BACKFLIP_CLIP);
+    // it lands behind him, then fading back to idle would slide him forward again
+    keepInPlace(backflipClip);
 
     this.mixer = new THREE.AnimationMixer(model);
     this.idleAction = this.mixer.clipAction(findClip(clips, IDLE_CLIP));
     this.walkAction = this.mixer.clipAction(walkClip);
     this.runAction = this.mixer.clipAction(findClip(clips, RUN_CLIP));
-    this.actions = [this.idleAction, this.walkAction, this.runAction];
+    this.backflipAction = this.mixer.clipAction(backflipClip);
+    // the others repeat by default; one flip per jump, then it holds its last pose
+    this.backflipAction.setLoop(THREE.LoopOnce, 1);
+    this.backflipAction.clampWhenFinished = true;
+    this.actions = [
+      this.idleAction,
+      this.walkAction,
+      this.runAction,
+      this.backflipAction,
+    ];
 
-    // all three always play, the weights decide which one shows
+    // all four always play, the weights decide which one shows
     for (const action of this.actions) {
-      action.setLoop(THREE.LoopRepeat, Infinity);
       action.weight = action === this.idleAction ? 1 : 0;
       action.play();
     }
   }
 
   pickAction() {
+    if (!this.player.grounded) {
+      return this.backflipAction;
+    }
     if (this.player.speed > WALK_SPEED) {
       return this.runAction;
     }
@@ -73,6 +92,13 @@ export class HeroAnimation {
 
   /** @param {number} dt */
   update(dt) {
+    if (this.wasGrounded && !this.player.grounded) {
+      this.backflipAction.reset();
+      // the clip crouches on the ground first, but he's already in the air
+      this.backflipAction.time = BACKFLIP_TAKEOFF_TIME;
+    }
+    this.wasGrounded = this.player.grounded;
+
     const chosen = this.pickAction();
     // weights by hand: crossFadeTo always restarts from 0 and 1, so a quick tap jumps
     const missing = 1 - chosen.weight;
