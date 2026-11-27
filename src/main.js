@@ -37,10 +37,9 @@ const player = new Player(
   PLANET_RADIUS,
   hero?.model ?? null,
   input.intent,
-  camera,
+  // a function: the rig follows the player, so it's made after him
+  () => followCamera.root,
 );
-const followCamera = new FollowCamera(camera, player.root, input.intent);
-scene.add(planet.root, lights.root, player.root, followCamera.root);
 
 /** @type {{ update(dt: number): void }[]} */
 const updatables = [input, player];
@@ -51,6 +50,13 @@ if (hero) {
   heroEyes = new HeroEyes(hero.model, heroAnimation.backflipAction);
   updatables.push(heroAnimation, heroEyes);
 }
+const followCamera = new FollowCamera(
+  camera,
+  player.root,
+  input.intent,
+  heroEyes,
+);
+scene.add(planet.root, lights.root, player.root, followCamera.root);
 // after what it follows, or it lags a frame behind
 updatables.push(followCamera);
 if (hero) {

@@ -31,9 +31,9 @@ const _n = new THREE.Vector3();
 const _up = new THREE.Vector3();
 const _q = new THREE.Quaternion();
 const _forward = new THREE.Vector3();
-const _cameraQuaternion = new THREE.Quaternion();
-const _cameraRight = new THREE.Vector3();
-const _cameraForward = new THREE.Vector3();
+const _rigQuaternion = new THREE.Quaternion();
+const _rigRight = new THREE.Vector3();
+const _rigForward = new THREE.Vector3();
 const _move = new THREE.Vector3();
 const _left = new THREE.Vector3();
 const _basis = new THREE.Matrix4();
@@ -74,12 +74,12 @@ export class Player {
    * @param {number} planetRadius
    * @param {THREE.Object3D | null} model
    * @param {{ moveX: number, moveY: number, run: boolean, jump: boolean }} intent
-   * @param {THREE.Camera} camera
+   * @param {() => THREE.Object3D} getCameraRig
    */
-  constructor(planetRadius, model, intent, camera) {
+  constructor(planetRadius, model, intent, getCameraRig) {
     this.planetRadius = planetRadius;
     this.intent = intent;
-    this.camera = camera;
+    this.getCameraRig = getCameraRig;
     this.speed = 0;
     this.height = 0;
     this.verticalSpeed = 0;
@@ -118,18 +118,19 @@ export class Player {
   /** @param {number} dt */
   turnTowardMoveDirection(dt) {
     _up.set(0, 1, 0).applyQuaternion(this.root.quaternion);
-    this.camera.getWorldQuaternion(_cameraQuaternion);
-    // its right, not where it looks: the camera tilts around its right, so the right stays level
-    _cameraRight
-      .set(1, 0, 0)
-      .applyQuaternion(_cameraQuaternion)
+    // the rig, not the camera: in first person the camera flips with the head, and its right can end up vertical
+    this.getCameraRig().getWorldQuaternion(_rigQuaternion);
+    // the rig faces +z like the player, so its right is -x
+    _rigRight
+      .set(-1, 0, 0)
+      .applyQuaternion(_rigQuaternion)
       .projectOnPlane(_up)
       .normalize();
-    _cameraForward.crossVectors(_up, _cameraRight);
+    _rigForward.crossVectors(_up, _rigRight);
     _move
       .set(0, 0, 0)
-      .addScaledVector(_cameraForward, this.intent.moveY)
-      .addScaledVector(_cameraRight, this.intent.moveX)
+      .addScaledVector(_rigForward, this.intent.moveY)
+      .addScaledVector(_rigRight, this.intent.moveX)
       // setFromRotationMatrix wants arrows of length 1, and a diagonal is longer
       .normalize();
     _left.crossVectors(_up, _move);

@@ -30,16 +30,23 @@ const lookForward = new THREE.Quaternion().setFromAxisAngle(
   Math.PI,
 );
 
+const _eyes = new THREE.Vector3();
+const _rigToBody = new THREE.Quaternion();
+const _bodyToRig = new THREE.Quaternion();
+const _headTurn = new THREE.Quaternion();
+
 export class FollowCamera {
   /**
    * @param {THREE.Camera} camera
    * @param {THREE.Object3D} target
    * @param {{ camDX: number, camDY: number, switchView: boolean }} intent
+   * @param {{ turn: THREE.Quaternion, moveWithHead(point: THREE.Vector3): THREE.Vector3 } | null} eyes
    */
-  constructor(camera, target, intent) {
+  constructor(camera, target, intent, eyes) {
     this.camera = camera;
     this.target = target;
     this.intent = intent;
+    this.eyes = eyes;
     this.pitch = 0;
     this.firstPerson = false;
 
@@ -89,6 +96,26 @@ export class FollowCamera {
       maxPitch,
     );
     this.pivot.quaternion.setFromAxisAngle(rigRight, this.pitch);
+    if (this.firstPerson && this.eyes) {
+      this.followHead(this.eyes);
+    }
+  }
+
+  /** @param {{ turn: THREE.Quaternion, moveWithHead(point: THREE.Vector3): THREE.Vector3 }} eyes */
+  followHead(eyes) {
+    // in first person the rig sits on the player, they only face different ways: the mouse turns the rig, the keys turn him
+    _rigToBody
+      .copy(this.target.quaternion)
+      .invert()
+      .multiply(this.root.quaternion);
+    _bodyToRig.copy(_rigToBody).invert();
+    _eyes.set(0, EYE_HEIGHT, EYE_FORWARD).applyQuaternion(_rigToBody);
+    eyes.moveWithHead(_eyes).applyQuaternion(_bodyToRig);
+    this.pivot.position.copy(_eyes);
+    // the same turn as the head's, written in the rig's frame instead of the body's
+    _headTurn.copy(_bodyToRig).multiply(eyes.turn).multiply(_rigToBody);
+    // premultiply: the head turns, and the mouse looks around inside the turned head
+    this.pivot.quaternion.premultiply(_headTurn);
   }
 
   switchView() {
