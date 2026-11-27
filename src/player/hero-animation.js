@@ -1,7 +1,9 @@
 import * as THREE from 'three';
+import { WALK_SPEED } from './player.js';
 
 const IDLE_CLIP = 'idle';
 const WALK_CLIP = 'walk';
+const RUN_CLIP = 'run';
 const HIPS_POSITION_TRACK = 'mixamorigHips.position';
 
 // placeholder, tuned later
@@ -47,23 +49,41 @@ export class HeroAnimation {
 
     this.mixer = new THREE.AnimationMixer(model);
     this.idleAction = this.mixer.clipAction(findClip(clips, IDLE_CLIP));
-    this.idleAction.setLoop(THREE.LoopRepeat, Infinity);
     this.walkAction = this.mixer.clipAction(walkClip);
-    this.walkAction.setLoop(THREE.LoopRepeat, Infinity);
+    this.runAction = this.mixer.clipAction(findClip(clips, RUN_CLIP));
+    this.actions = [this.idleAction, this.walkAction, this.runAction];
 
-    this.currentAction = this.idleAction;
-    this.currentAction.play();
+    // all three always play, the weights decide which one shows
+    for (const action of this.actions) {
+      action.setLoop(THREE.LoopRepeat, Infinity);
+      action.weight = action === this.idleAction ? 1 : 0;
+      action.play();
+    }
+  }
+
+  pickAction() {
+    if (this.player.speed > WALK_SPEED) {
+      return this.runAction;
+    }
+    if (this.player.speed > 0) {
+      return this.walkAction;
+    }
+    return this.idleAction;
   }
 
   /** @param {number} dt */
   update(dt) {
-    const nextAction =
-      this.player.speed > 0 ? this.walkAction : this.idleAction;
-    if (nextAction !== this.currentAction) {
-      // a finished fade-out leaves the action disabled, reset turns it back on
-      nextAction.reset().play();
-      this.currentAction.crossFadeTo(nextAction, FADE_DURATION);
-      this.currentAction = nextAction;
+    const chosen = this.pickAction();
+    // weights by hand: crossFadeTo always restarts from 0 and 1, so a quick tap jumps
+    const missing = 1 - chosen.weight;
+    if (missing > 0) {
+      const step = dt / FADE_DURATION;
+      // the same share for every weight keeps the sum at 1, below 1 the mixer blends in the rest pose
+      const share = Math.min(1, step / missing);
+      for (const action of this.actions) {
+        const target = action === chosen ? 1 : 0;
+        action.weight += (target - action.weight) * share;
+      }
     }
     this.mixer.update(dt);
   }

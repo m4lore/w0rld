@@ -17,7 +17,7 @@ const START_DIRECTION_Y = 1;
 const START_DIRECTION_Z = 3;
 
 // placeholders, tuned later
-const WALK_SPEED = 3;
+export const WALK_SPEED = 3;
 const RUN_SPEED = 6;
 
 // placeholder, tuned later
