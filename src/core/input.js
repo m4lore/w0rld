@@ -5,6 +5,7 @@ const RIGHT_KEY = 'KeyD';
 const LEFT_SHIFT_KEY = 'ShiftLeft';
 const RIGHT_SHIFT_KEY = 'ShiftRight';
 const SWITCH_VIEW_KEY = 'KeyV';
+const JUMP_KEY = 'Space';
 const LEFT_COMMAND_KEY = 'MetaLeft';
 const RIGHT_COMMAND_KEY = 'MetaRight';
 
@@ -19,12 +20,14 @@ export class Input {
       camDX: 0,
       camDY: 0,
       switchView: false,
+      jump: false,
     };
     /** @type {Set<string>} */
     this.heldKeys = new Set();
     this.mouseDX = 0;
     this.mouseDY = 0;
     this.switchViewPressed = false;
+    this.jumpPressed = false;
 
     element.addEventListener('click', async () => {
       try {
@@ -50,6 +53,9 @@ export class Input {
       if (event.code === SWITCH_VIEW_KEY && !event.repeat) {
         this.switchViewPressed = true;
       }
+      if (event.code === JUMP_KEY && !event.repeat && !event.metaKey) {
+        this.jumpPressed = true;
+      }
     });
 
     window.addEventListener('keyup', (event) => {
@@ -73,9 +79,11 @@ export class Input {
     this.intent.camDX = this.mouseDX;
     this.intent.camDY = this.mouseDY;
     this.intent.switchView = this.switchViewPressed;
+    this.intent.jump = this.jumpPressed;
     this.mouseDX = 0;
     this.mouseDY = 0;
     this.switchViewPressed = false;
+    this.jumpPressed = false;
   }
 
   /**
@@ -94,5 +102,6 @@ export class Input {
     this.mouseDX = 0;
     this.mouseDY = 0;
     this.switchViewPressed = false;
+    this.jumpPressed = false;
   }
 }

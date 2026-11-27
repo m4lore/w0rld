@@ -23,6 +23,10 @@ const RUN_SPEED = 6;
 // placeholder, tuned later
 const TURN_SHARPNESS = 12;
 
+// placeholders, tuned later
+const JUMP_SPEED = 6;
+const GRAVITY = 18;
+
 const _n = new THREE.Vector3();
 const _up = new THREE.Vector3();
 const _q = new THREE.Quaternion();
@@ -69,7 +73,7 @@ export class Player {
   /**
    * @param {number} planetRadius
    * @param {THREE.Object3D | null} model
-   * @param {{ moveX: number, moveY: number, run: boolean }} intent
+   * @param {{ moveX: number, moveY: number, run: boolean, jump: boolean }} intent
    * @param {THREE.Camera} camera
    */
   constructor(planetRadius, model, intent, camera) {
@@ -77,6 +81,9 @@ export class Player {
     this.intent = intent;
     this.camera = camera;
     this.speed = 0;
+    this.height = 0;
+    this.verticalSpeed = 0;
+    this.grounded = true;
 
     this.model = model ?? createPlaceholder();
     this.root = new THREE.Group();
@@ -100,8 +107,11 @@ export class Player {
     // along the nose, not the keys: while he turns he walks a curve
     _forward.set(0, 0, 1).applyQuaternion(this.root.quaternion);
     this.root.position.addScaledVector(_forward, this.speed * dt);
+    this.updateHeight(dt);
     // a straight step lifts off the sphere a little
-    this.root.position.normalize().multiplyScalar(this.planetRadius);
+    this.root.position
+      .normalize()
+      .multiplyScalar(this.planetRadius + this.height);
     alignToSurface(this.root);
   }
 
@@ -129,5 +139,25 @@ export class Player {
     const turn = 1 - Math.exp(-TURN_SHARPNESS * dt);
     // both poses share the up, so slerp turns only around it, even when he turns back
     this.root.quaternion.slerp(_facing, turn);
+  }
+
+  /** @param {number} dt */
+  updateHeight(dt) {
+    if (this.intent.jump && this.grounded) {
+      this.verticalSpeed = JUMP_SPEED;
+      this.grounded = false;
+    }
+    if (this.grounded) {
+      return;
+    }
+    const speedBefore = this.verticalSpeed;
+    this.verticalSpeed -= GRAVITY * dt;
+    // the frame's average speed, so the jump is just as high at any frame rate
+    this.height += ((speedBefore + this.verticalSpeed) / 2) * dt;
+    if (this.height <= 0) {
+      this.height = 0;
+      this.verticalSpeed = 0;
+      this.grounded = true;
+    }
   }
 }
