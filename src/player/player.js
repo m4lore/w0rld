@@ -19,6 +19,9 @@ const START_DIRECTION_Z = 3;
 // placeholder, tuned later
 const WALK_SPEED = 3;
 
+// placeholder, tuned later
+const TURN_SHARPNESS = 12;
+
 const _n = new THREE.Vector3();
 const _up = new THREE.Vector3();
 const _q = new THREE.Quaternion();
@@ -29,6 +32,7 @@ const _cameraForward = new THREE.Vector3();
 const _move = new THREE.Vector3();
 const _left = new THREE.Vector3();
 const _basis = new THREE.Matrix4();
+const _facing = new THREE.Quaternion();
 
 /** @param {THREE.Object3D} root */
 export function alignToSurface(root) {
@@ -89,8 +93,9 @@ export class Player {
     const moving = this.intent.moveX !== 0 || this.intent.moveY !== 0;
     this.speed = moving ? WALK_SPEED : 0;
     if (moving) {
-      this.faceMoveDirection();
+      this.turnTowardMoveDirection(dt);
     }
+    // along the nose, not the keys: while he turns he walks a curve
     _forward.set(0, 0, 1).applyQuaternion(this.root.quaternion);
     this.root.position.addScaledVector(_forward, this.speed * dt);
     // a straight step lifts off the sphere a little
@@ -98,7 +103,8 @@ export class Player {
     alignToSurface(this.root);
   }
 
-  faceMoveDirection() {
+  /** @param {number} dt */
+  turnTowardMoveDirection(dt) {
     _up.set(0, 1, 0).applyQuaternion(this.root.quaternion);
     this.camera.getWorldQuaternion(_cameraQuaternion);
     // its right, not where it looks: the camera tilts around its right, so the right stays level
@@ -112,11 +118,14 @@ export class Player {
       .set(0, 0, 0)
       .addScaledVector(_cameraForward, this.intent.moveY)
       .addScaledVector(_cameraRight, this.intent.moveX)
-      // makeBasis wants arrows of length 1, and a diagonal is longer
+      // setFromRotationMatrix wants arrows of length 1, and a diagonal is longer
       .normalize();
     _left.crossVectors(_up, _move);
     // he faces +z, so his x is his left, not his right
     _basis.makeBasis(_left, _up, _move);
-    this.root.quaternion.setFromRotationMatrix(_basis);
+    _facing.setFromRotationMatrix(_basis);
+    const turn = 1 - Math.exp(-TURN_SHARPNESS * dt);
+    // both poses share the up, so slerp turns only around it, even when he turns back
+    this.root.quaternion.slerp(_facing, turn);
   }
 }
