@@ -2,13 +2,24 @@ const FORWARD_KEY = 'KeyW';
 const BACK_KEY = 'KeyS';
 const LEFT_KEY = 'KeyA';
 const RIGHT_KEY = 'KeyD';
+const LEFT_SHIFT_KEY = 'ShiftLeft';
+const RIGHT_SHIFT_KEY = 'ShiftRight';
 const SWITCH_VIEW_KEY = 'KeyV';
+const LEFT_COMMAND_KEY = 'MetaLeft';
+const RIGHT_COMMAND_KEY = 'MetaRight';
 
 export class Input {
   /** @param {HTMLElement} element */
   constructor(element) {
     // filled in place: the player and the camera keep a reference to this object
-    this.intent = { moveX: 0, moveY: 0, camDX: 0, camDY: 0, switchView: false };
+    this.intent = {
+      moveX: 0,
+      moveY: 0,
+      run: false,
+      camDX: 0,
+      camDY: 0,
+      switchView: false,
+    };
     /** @type {Set<string>} */
     this.heldKeys = new Set();
     this.mouseDX = 0;
@@ -31,7 +42,10 @@ export class Input {
     });
 
     window.addEventListener('keydown', (event) => {
-      this.heldKeys.add(event.code);
+      // with cmd down it's a shortcut, not a move
+      if (!event.metaKey) {
+        this.heldKeys.add(event.code);
+      }
       // a held key fires keydown again and again, one press is one switch
       if (event.code === SWITCH_VIEW_KEY && !event.repeat) {
         this.switchViewPressed = true;
@@ -40,6 +54,10 @@ export class Input {
 
     window.addEventListener('keyup', (event) => {
       this.heldKeys.delete(event.code);
+      // on macos a key let go while cmd is down sends no keyup
+      if (event.code === LEFT_COMMAND_KEY || event.code === RIGHT_COMMAND_KEY) {
+        this.heldKeys.clear();
+      }
     });
 
     window.addEventListener('blur', () => this.clear());
@@ -49,6 +67,8 @@ export class Input {
   update() {
     this.intent.moveX = this.readAxis(LEFT_KEY, RIGHT_KEY);
     this.intent.moveY = this.readAxis(BACK_KEY, FORWARD_KEY);
+    this.intent.run =
+      this.heldKeys.has(LEFT_SHIFT_KEY) || this.heldKeys.has(RIGHT_SHIFT_KEY);
     // several moves can land in one frame, they add up until here
     this.intent.camDX = this.mouseDX;
     this.intent.camDY = this.mouseDY;

@@ -16,8 +16,9 @@ const START_DIRECTION_X = 1;
 const START_DIRECTION_Y = 1;
 const START_DIRECTION_Z = 3;
 
-// placeholder, tuned later
+// placeholders, tuned later
 const WALK_SPEED = 3;
+const RUN_SPEED = 6;
 
 // placeholder, tuned later
 const TURN_SHARPNESS = 12;
@@ -68,7 +69,7 @@ export class Player {
   /**
    * @param {number} planetRadius
    * @param {THREE.Object3D | null} model
-   * @param {{ moveX: number, moveY: number }} intent
+   * @param {{ moveX: number, moveY: number, run: boolean }} intent
    * @param {THREE.Camera} camera
    */
   constructor(planetRadius, model, intent, camera) {
@@ -91,7 +92,8 @@ export class Player {
   /** @param {number} dt */
   update(dt) {
     const moving = this.intent.moveX !== 0 || this.intent.moveY !== 0;
-    this.speed = moving ? WALK_SPEED : 0;
+    const moveSpeed = this.intent.run ? RUN_SPEED : WALK_SPEED;
+    this.speed = moving ? moveSpeed : 0;
     if (moving) {
       this.turnTowardMoveDirection(dt);
     }
