@@ -1,12 +1,16 @@
 const FORWARD_KEY = 'KeyW';
+const BACK_KEY = 'KeyS';
+const LEFT_KEY = 'KeyA';
+const RIGHT_KEY = 'KeyD';
 const SWITCH_VIEW_KEY = 'KeyV';
 
 export class Input {
   /** @param {HTMLElement} element */
   constructor(element) {
     // filled in place: the player and the camera keep a reference to this object
-    this.intent = { moveY: 0, camDX: 0, camDY: 0, switchView: false };
-    this.forwardHeld = false;
+    this.intent = { moveX: 0, moveY: 0, camDX: 0, camDY: 0, switchView: false };
+    /** @type {Set<string>} */
+    this.heldKeys = new Set();
     this.mouseDX = 0;
     this.mouseDY = 0;
     this.switchViewPressed = false;
@@ -27,9 +31,7 @@ export class Input {
     });
 
     window.addEventListener('keydown', (event) => {
-      if (event.code === FORWARD_KEY) {
-        this.forwardHeld = true;
-      }
+      this.heldKeys.add(event.code);
       // a held key fires keydown again and again, one press is one switch
       if (event.code === SWITCH_VIEW_KEY && !event.repeat) {
         this.switchViewPressed = true;
@@ -37,9 +39,7 @@ export class Input {
     });
 
     window.addEventListener('keyup', (event) => {
-      if (event.code === FORWARD_KEY) {
-        this.forwardHeld = false;
-      }
+      this.heldKeys.delete(event.code);
     });
 
     window.addEventListener('blur', () => this.clear());
@@ -47,7 +47,8 @@ export class Input {
   }
 
   update() {
-    this.intent.moveY = this.forwardHeld ? 1 : 0;
+    this.intent.moveX = this.readAxis(LEFT_KEY, RIGHT_KEY);
+    this.intent.moveY = this.readAxis(BACK_KEY, FORWARD_KEY);
     // several moves can land in one frame, they add up until here
     this.intent.camDX = this.mouseDX;
     this.intent.camDY = this.mouseDY;
@@ -57,9 +58,19 @@ export class Input {
     this.switchViewPressed = false;
   }
 
+  /**
+   * @param {string} minusKey
+   * @param {string} plusKey
+   */
+  readAxis(minusKey, plusKey) {
+    const plus = this.heldKeys.has(plusKey) ? 1 : 0;
+    const minus = this.heldKeys.has(minusKey) ? 1 : 0;
+    return plus - minus;
+  }
+
   clear() {
     // a key let go in another window never sends keyup here
-    this.forwardHeld = false;
+    this.heldKeys.clear();
     this.mouseDX = 0;
     this.mouseDY = 0;
     this.switchViewPressed = false;

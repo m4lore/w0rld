@@ -17,8 +17,8 @@ import { PLANET_RADIUS, Planet } from './world/planet.js';
 const FOG_COLOR = 0xb4aed0;
 
 // placeholders, tuned later
-const FOG_NEAR = 6;
-const FOG_FAR = 11;
+const FOG_NEAR = 3;
+const FOG_FAR = 9;
 
 const renderer = createRenderer(document.body);
 const input = new Input(renderer.domElement);
@@ -32,7 +32,12 @@ enableDistanceFog();
 const planet = new Planet();
 const lights = new Lights();
 const hero = await loadHeroModel();
-const player = new Player(PLANET_RADIUS, hero?.model ?? null, input.intent);
+const player = new Player(
+  PLANET_RADIUS,
+  hero?.model ?? null,
+  input.intent,
+  camera,
+);
 const followCamera = new FollowCamera(camera, player.root, input.intent);
 scene.add(planet.root, lights.root, player.root, followCamera.root);
 

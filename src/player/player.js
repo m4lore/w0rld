@@ -23,6 +23,12 @@ const _n = new THREE.Vector3();
 const _up = new THREE.Vector3();
 const _q = new THREE.Quaternion();
 const _forward = new THREE.Vector3();
+const _cameraQuaternion = new THREE.Quaternion();
+const _cameraRight = new THREE.Vector3();
+const _cameraForward = new THREE.Vector3();
+const _move = new THREE.Vector3();
+const _left = new THREE.Vector3();
+const _basis = new THREE.Matrix4();
 
 /** @param {THREE.Object3D} root */
 export function alignToSurface(root) {
@@ -58,11 +64,13 @@ export class Player {
   /**
    * @param {number} planetRadius
    * @param {THREE.Object3D | null} model
-   * @param {{ moveY: number }} intent
+   * @param {{ moveX: number, moveY: number }} intent
+   * @param {THREE.Camera} camera
    */
-  constructor(planetRadius, model, intent) {
+  constructor(planetRadius, model, intent, camera) {
     this.planetRadius = planetRadius;
     this.intent = intent;
+    this.camera = camera;
     this.speed = 0;
 
     this.model = model ?? createPlaceholder();
@@ -78,11 +86,37 @@ export class Player {
 
   /** @param {number} dt */
   update(dt) {
-    this.speed = this.intent.moveY > 0 ? WALK_SPEED : 0;
+    const moving = this.intent.moveX !== 0 || this.intent.moveY !== 0;
+    this.speed = moving ? WALK_SPEED : 0;
+    if (moving) {
+      this.faceMoveDirection();
+    }
     _forward.set(0, 0, 1).applyQuaternion(this.root.quaternion);
     this.root.position.addScaledVector(_forward, this.speed * dt);
     // a straight step lifts off the sphere a little
     this.root.position.normalize().multiplyScalar(this.planetRadius);
     alignToSurface(this.root);
+  }
+
+  faceMoveDirection() {
+    _up.set(0, 1, 0).applyQuaternion(this.root.quaternion);
+    this.camera.getWorldQuaternion(_cameraQuaternion);
+    // its right, not where it looks: the camera tilts around its right, so the right stays level
+    _cameraRight
+      .set(1, 0, 0)
+      .applyQuaternion(_cameraQuaternion)
+      .projectOnPlane(_up)
+      .normalize();
+    _cameraForward.crossVectors(_up, _cameraRight);
+    _move
+      .set(0, 0, 0)
+      .addScaledVector(_cameraForward, this.intent.moveY)
+      .addScaledVector(_cameraRight, this.intent.moveX)
+      // makeBasis wants arrows of length 1, and a diagonal is longer
+      .normalize();
+    _left.crossVectors(_up, _move);
+    // he faces +z, so his x is his left, not his right
+    _basis.makeBasis(_left, _up, _move);
+    this.root.quaternion.setFromRotationMatrix(_basis);
   }
 }
