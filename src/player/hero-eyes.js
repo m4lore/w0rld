@@ -8,12 +8,12 @@ const _joint = new THREE.Vector3();
 export class HeroEyes {
   /**
    * @param {THREE.Object3D} model
-   * @param {THREE.AnimationAction} backflipAction
+   * @param {THREE.AnimationAction[]} backflipActions
    * @param {THREE.AnimationAction} runAction
    */
-  constructor(model, backflipAction, runAction) {
+  constructor(model, backflipActions, runAction) {
     this.model = model;
-    this.backflipAction = backflipAction;
+    this.backflipActions = backflipActions;
     this.runAction = runAction;
 
     const head = model.getObjectByName(HEAD_BONE);
@@ -54,7 +54,9 @@ export class HeroEyes {
     // the bone's axes aren't the body's, so only the change since rest is a turn of the head
     _rotation.multiply(this.restInverse);
     // the flip's weight fades the turn in and out, so on the ground there's none
-    const flipWeight = this.backflipAction.weight;
+    // jumping right after landing one flip fades out while the other fades in, so both weights count
+    const [flip, otherFlip] = this.backflipActions;
+    const flipWeight = flip.weight + otherFlip.weight;
     this.turn.slerpQuaternions(noTurn, _rotation, flipWeight);
     this.joint.lerpVectors(this.restJoint, _joint, flipWeight);
     // running, only how far forward the head goes: its bob and sway would shake the view

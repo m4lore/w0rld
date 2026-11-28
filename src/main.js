@@ -49,7 +49,7 @@ if (hero) {
   const heroAnimation = new HeroAnimation(hero.model, hero.clips, player);
   heroEyes = new HeroEyes(
     hero.model,
-    heroAnimation.backflipAction,
+    heroAnimation.backflipActions,
     heroAnimation.runAction,
   );
   updatables.push(heroAnimation, heroEyes);

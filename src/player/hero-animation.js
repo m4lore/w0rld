@@ -59,18 +59,25 @@ export class HeroAnimation {
     this.idleAction = this.mixer.clipAction(findClip(clips, IDLE_CLIP));
     this.walkAction = this.mixer.clipAction(walkClip);
     this.runAction = this.mixer.clipAction(findClip(clips, RUN_CLIP));
-    this.backflipAction = this.mixer.clipAction(backflipClip);
-    // the others repeat by default; one flip per jump, then it holds its last pose
-    this.backflipAction.setLoop(THREE.LoopOnce, 1);
-    this.backflipAction.clampWhenFinished = true;
+    // clipAction gives back the same action for the same clip, a clone counts as a new one
+    this.backflipActions = [
+      this.mixer.clipAction(backflipClip),
+      this.mixer.clipAction(backflipClip.clone()),
+    ];
+    for (const backflip of this.backflipActions) {
+      // the others repeat by default; one flip per jump, then it holds its last pose
+      backflip.setLoop(THREE.LoopOnce, 1);
+      backflip.clampWhenFinished = true;
+    }
+    this.backflipAction = this.backflipActions[0];
     this.actions = [
       this.idleAction,
       this.walkAction,
       this.runAction,
-      this.backflipAction,
+      ...this.backflipActions,
     ];
 
-    // all four always play, the weights decide which one shows
+    // they all always play, the weights decide which one shows
     for (const action of this.actions) {
       action.weight = action === this.idleAction ? 1 : 0;
       action.play();
@@ -93,6 +100,9 @@ export class HeroAnimation {
   /** @param {number} dt */
   update(dt) {
     if (this.wasGrounded && !this.player.grounded) {
+      const [first, second] = this.backflipActions;
+      // jumping right after landing the last flip still shows as it fades out, restarting it would snap
+      this.backflipAction = this.backflipAction === first ? second : first;
       this.backflipAction.reset();
       // the clip crouches on the ground first, but he's already in the air
       this.backflipAction.time = BACKFLIP_TAKEOFF_TIME;
