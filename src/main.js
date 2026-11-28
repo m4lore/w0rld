@@ -47,7 +47,11 @@ const updatables = [input, player];
 let heroEyes = null;
 if (hero) {
   const heroAnimation = new HeroAnimation(hero.model, hero.clips, player);
-  heroEyes = new HeroEyes(hero.model, heroAnimation.backflipAction);
+  heroEyes = new HeroEyes(
+    hero.model,
+    heroAnimation.backflipAction,
+    heroAnimation.runAction,
+  );
   updatables.push(heroAnimation, heroEyes);
 }
 const followCamera = new FollowCamera(
